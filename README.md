@@ -122,6 +122,48 @@ npm install
 npm start
 ```
 
+### Testing
+
+RetroLog includes comprehensive test suites for both backend and frontend:
+
+**Run All Tests:**
+```bash
+./scripts/run-tests.sh --all
+```
+
+**Backend Tests Only:**
+```bash
+./scripts/run-tests.sh --backend --coverage
+```
+
+**Frontend Tests Only:**
+```bash
+./scripts/run-tests.sh --frontend --coverage
+```
+
+**Integration Tests:**
+```bash
+./scripts/run-tests.sh --integration
+```
+
+**Watch Mode (Frontend):**
+```bash
+./scripts/run-tests.sh --frontend --watch
+```
+
+### Pre-commit Hooks
+
+Tests run automatically before each commit:
+
+```bash
+# Set up pre-commit hooks
+./scripts/setup-hooks.sh
+
+# Tests will now run on every commit
+git add .
+git commit -m "your changes"
+```
+
 ### Environment Variables
 - `GOOGLE_API_KEY`: Required for AI features
 - `DATABASE_URL`: MySQL connection string (auto-configured in Docker)
@@ -172,9 +214,19 @@ RetroLog leverages Google's Gemini AI for several key features:
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+3. Set up pre-commit hooks (`./scripts/setup-hooks.sh`)
+4. Make your changes and ensure tests pass
+5. Commit your changes (`git commit -m 'Add amazing feature'`)
+6. Push to the branch (`git push origin feature/amazing-feature`)
+7. Open a Pull Request
+
+### Quality Assurance
+
+- **Automated Testing**: All commits trigger comprehensive test suites
+- **Pre-commit Hooks**: Tests run locally before commits are allowed
+- **CI/CD Pipeline**: GitHub Actions run tests on all pull requests
+- **Code Coverage**: Maintain >80% test coverage for both backend and frontend
+- **Security Scanning**: Automated vulnerability scanning on all changes
 
 ## 📄 License
 

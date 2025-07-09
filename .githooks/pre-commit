@@ -1,0 +1,7 @@
+#!/bin/bash
+
+# Git pre-commit hook for RetroLog
+# This hook runs tests before allowing commits
+
+# Run the pre-commit script
+exec ./scripts/pre-commit.sh

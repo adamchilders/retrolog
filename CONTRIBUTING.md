@@ -22,11 +22,16 @@ Thank you for your interest in contributing to RetroLog! This document provides 
    ./setup.sh
    ```
 
-3. **Or manual setup**
+3. **Set up pre-commit hooks**
+   ```bash
+   ./scripts/setup-hooks.sh
+   ```
+
+4. **Or manual setup**
    ```bash
    # Copy environment file
    cp backend/.env.example backend/.env
-   
+
    # Add your Google Gemini API key to backend/.env
    # Build and start the application
    docker-compose up --build
@@ -48,11 +53,16 @@ Thank you for your interest in contributing to RetroLog! This document provides 
 
 3. **Test your changes**
    ```bash
-   # Run backend tests (when available)
-   docker-compose exec backend python -m pytest
-   
-   # Run frontend tests
-   docker-compose exec frontend npm test
+   # Run all tests
+   ./scripts/run-tests.sh --all
+
+   # Run specific test suites
+   ./scripts/run-tests.sh --backend --coverage
+   ./scripts/run-tests.sh --frontend --coverage
+   ./scripts/run-tests.sh --integration
+
+   # Run tests in watch mode (frontend)
+   ./scripts/run-tests.sh --frontend --watch
    ```
 
 4. **Commit your changes**
@@ -111,23 +121,70 @@ We follow the [Conventional Commits](https://www.conventionalcommits.org/) speci
 
 ## Testing
 
-### Backend Testing
-```bash
-# Run all tests
-docker-compose exec backend python -m pytest
+RetroLog has comprehensive test coverage with automated testing at multiple levels:
 
-# Run with coverage
-docker-compose exec backend python -m pytest --cov=app
+### Test Types
+
+1. **Unit Tests**: Test individual functions and components
+2. **Integration Tests**: Test API endpoints and component interactions
+3. **End-to-End Tests**: Test complete user workflows
+4. **Security Tests**: Automated vulnerability scanning
+
+### Running Tests
+
+**All Tests:**
+```bash
+./scripts/run-tests.sh --all --coverage
 ```
 
-### Frontend Testing
+**Backend Tests:**
 ```bash
-# Run tests
-docker-compose exec frontend npm test
-
-# Run tests with coverage
-docker-compose exec frontend npm test -- --coverage
+./scripts/run-tests.sh --backend --coverage
 ```
+
+**Frontend Tests:**
+```bash
+./scripts/run-tests.sh --frontend --coverage
+```
+
+**Integration Tests:**
+```bash
+./scripts/run-tests.sh --integration
+```
+
+**Watch Mode (Development):**
+```bash
+./scripts/run-tests.sh --frontend --watch
+```
+
+### Test Coverage Requirements
+
+- **Minimum Coverage**: 80% for both backend and frontend
+- **Critical Paths**: 95% coverage for authentication and data handling
+- **New Features**: Must include comprehensive tests
+- **Bug Fixes**: Must include regression tests
+
+### Pre-commit Testing
+
+Tests run automatically before commits:
+
+```bash
+# Set up once
+./scripts/setup-hooks.sh
+
+# Tests run automatically on commit
+git commit -m "your changes"
+
+# Bypass in emergencies (not recommended)
+git commit --no-verify -m "emergency fix"
+```
+
+### Continuous Integration
+
+- **GitHub Actions**: Run on all pushes and pull requests
+- **Multiple Environments**: Test against different Python/Node versions
+- **Security Scanning**: Automated vulnerability detection
+- **Code Quality**: Linting and formatting checks
 
 ## Documentation
 
