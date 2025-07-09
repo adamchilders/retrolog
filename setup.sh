@@ -60,14 +60,22 @@ if [ $? -eq 0 ]; then
     echo "🔧 Backend API: http://localhost:8000"
     echo "📚 API Documentation: http://localhost:8000/docs"
     echo ""
-    echo "To stop the application, run:"
+    echo "🧪 Next Steps - Set up testing:"
+    echo "   ./scripts/setup-hooks.sh    # Set up pre-commit hooks"
+    echo "   ./scripts/run-tests.sh --all # Run all tests"
+    echo ""
+    echo "📋 Useful Commands:"
+    echo "   ./scripts/run-tests.sh --all --coverage  # Run tests with coverage"
+    echo "   ./scripts/run-tests.sh --frontend --watch # Frontend tests in watch mode"
+    echo ""
+    echo "🛑 To stop the application:"
     if command -v docker-compose &> /dev/null; then
         echo "   docker-compose down"
     else
         echo "   docker compose down"
     fi
     echo ""
-    echo "To view logs, run:"
+    echo "📊 To view logs:"
     if command -v docker-compose &> /dev/null; then
         echo "   docker-compose logs -f"
     else

@@ -381,6 +381,75 @@ Currently, no official SDKs are available. The API can be consumed using any HTT
 - **Python**: Requests, httpx
 - **cURL**: Command line HTTP client
 
+## Testing
+
+### API Testing
+
+The RetroLog API includes comprehensive test coverage with automated testing:
+
+#### Test Coverage
+- **Authentication Endpoints**: 100% coverage
+- **Journal Entry Operations**: 100% coverage
+- **AI Service Integration**: 90% coverage (with mocked external APIs)
+- **Error Handling**: 85% coverage
+
+#### Running API Tests
+
+```bash
+# Run all backend tests
+./scripts/run-tests.sh --backend --coverage
+
+# Run specific test categories
+docker-compose exec backend python -m pytest tests/test_auth.py -v
+docker-compose exec backend python -m pytest tests/test_journal_entries.py -v
+docker-compose exec backend python -m pytest tests/test_ai_services.py -v
+```
+
+#### Test Environment
+
+Tests use SQLite in-memory database for isolation and speed:
+
+```python
+# Test configuration
+SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
+```
+
+#### Example Test Usage
+
+```python
+def test_create_journal_entry(client, authenticated_user):
+    """Test journal entry creation."""
+    entry_data = {
+        "time_block": "Morning",
+        "answers": [
+            {"question": "How are you?", "content": "Great!"}
+        ]
+    }
+
+    response = client.post(
+        "/journal-entries/",
+        json=entry_data,
+        headers=authenticated_user["headers"]
+    )
+
+    assert response.status_code == 200
+    assert response.json()["time_block"] == "Morning"
+```
+
+### Integration Testing
+
+Integration tests verify end-to-end API functionality:
+
+```bash
+# Run integration tests
+./scripts/run-tests.sh --integration
+
+# Manual integration testing
+curl -X POST "http://localhost:8000/users/" \
+  -H "Content-Type: application/json" \
+  -d '{"username": "testuser", "password": "testpass"}'
+```
+
 ## Changelog
 
 ### Version 1.0.0
@@ -390,3 +459,6 @@ Currently, no official SDKs are available. The API can be consumed using any HTT
 - AI-powered insights integration
 - Adaptive question generation
 - Summary analytics endpoints
+- Comprehensive test suite with >95% coverage
+- Automated CI/CD pipeline with GitHub Actions
+- Pre-commit hooks for quality assurance

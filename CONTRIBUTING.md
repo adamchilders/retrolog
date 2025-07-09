@@ -181,10 +181,32 @@ git commit --no-verify -m "emergency fix"
 
 ### Continuous Integration
 
-- **GitHub Actions**: Run on all pushes and pull requests
-- **Multiple Environments**: Test against different Python/Node versions
-- **Security Scanning**: Automated vulnerability detection
-- **Code Quality**: Linting and formatting checks
+Our CI/CD pipeline ensures code quality through automated testing:
+
+#### GitHub Actions Pipeline
+- **Multi-Stage Testing**: Backend, frontend, integration, and security tests
+- **Multiple Environments**: Python 3.9+ and Node.js 18+ compatibility
+- **Parallel Execution**: Tests run concurrently for faster feedback
+- **Artifact Management**: Build artifacts stored for deployment
+
+#### Pipeline Stages
+1. **Backend Tests**: Unit tests with MySQL database integration
+2. **Frontend Tests**: React component and integration tests
+3. **Integration Tests**: End-to-end service communication
+4. **Security Scanning**: Trivy vulnerability detection
+5. **Code Quality**: Automated linting and formatting validation
+
+#### Quality Gates
+- **Test Coverage**: Minimum 80% coverage required
+- **Security Scan**: No high/critical vulnerabilities allowed
+- **Code Quality**: All linting checks must pass
+- **Build Success**: All environments must build successfully
+
+#### Viewing Results
+- **GitHub Actions**: Check the Actions tab for detailed results
+- **Coverage Reports**: Codecov integration provides coverage metrics
+- **Security Reports**: GitHub Security tab shows vulnerability findings
+- **Quality Metrics**: PR checks show code quality status
 
 ## Documentation
 
