@@ -1,6 +1,6 @@
 # RetroLog API Documentation
 
-This document provides comprehensive documentation for the RetroLog REST API. The API is built with FastAPI and provides endpoints for user authentication, journal entry management, and AI-powered insights.
+This document provides comprehensive documentation for the RetroLog REST API. The API is built with FastAPI and provides endpoints for user authentication, journal entry management, long-term goal tracking, and AI-powered insights.
 
 ## Base URL
 - **Development**: `http://localhost:8000`
@@ -301,6 +301,142 @@ password: string (required)
 **Status Codes**:
 - `200`: Service is healthy
 
+### Long-term Goals Endpoints
+
+#### POST /goals/
+**Description**: Create a new long-term goal
+**Authentication**: Required
+
+**Request Body**:
+```json
+{
+  "title": "Wake up early",
+  "description": "Wake up at 6 AM every day",
+  "category": "habits",
+  "target_frequency": "daily"
+}
+```
+
+**Response**:
+```json
+{
+  "id": 1,
+  "title": "Wake up early",
+  "description": "Wake up at 6 AM every day",
+  "category": "habits",
+  "status": "active",
+  "created_at": "2024-01-15T10:30:00",
+  "updated_at": "2024-01-15T10:30:00",
+  "target_frequency": "daily",
+  "is_active": true,
+  "owner_id": 1,
+  "progress_entries": []
+}
+```
+
+**Status Codes**:
+- `200`: Goal created successfully
+- `401`: Unauthorized
+
+---
+
+#### GET /goals/
+**Description**: Get all goals for the current user
+**Authentication**: Required
+
+**Query Parameters**:
+- `include_inactive`: boolean (optional, default: false)
+
+**Response**:
+```json
+[
+  {
+    "id": 1,
+    "title": "Wake up early",
+    "description": "Wake up at 6 AM every day",
+    "category": "habits",
+    "status": "active",
+    "created_at": "2024-01-15T10:30:00",
+    "updated_at": "2024-01-15T10:30:00",
+    "target_frequency": "daily",
+    "is_active": true,
+    "owner_id": 1,
+    "progress_entries": []
+  }
+]
+```
+
+**Status Codes**:
+- `200`: Success
+- `401`: Unauthorized
+
+---
+
+#### GET /goals/analytics
+**Description**: Get analytics for user's goals including progress trends
+**Authentication**: Required
+
+**Response**:
+```json
+{
+  "total_goals": 3,
+  "goals_by_category": {
+    "habits": 2,
+    "health": 1
+  },
+  "goals_by_frequency": {
+    "daily": 2,
+    "weekly": 1
+  },
+  "recent_progress": [
+    {
+      "goal_id": 1,
+      "goal_title": "Wake up early",
+      "entries_count": 5,
+      "average_rating": 4.2
+    }
+  ]
+}
+```
+
+**Status Codes**:
+- `200`: Success
+- `401`: Unauthorized
+
+---
+
+#### POST /goals/{goal_id}/progress
+**Description**: Add progress entry for a goal
+**Authentication**: Required
+
+**Path Parameters**:
+- `goal_id`: integer (required)
+
+**Request Body**:
+```json
+{
+  "rating": 4,
+  "progress_note": "Woke up at 6:15 AM, close to target"
+}
+```
+
+**Response**:
+```json
+{
+  "id": 1,
+  "goal_id": 1,
+  "journal_entry_id": null,
+  "date": "2024-01-15T10:30:00",
+  "rating": 4,
+  "progress_note": "Woke up at 6:15 AM, close to target"
+}
+```
+
+**Status Codes**:
+- `201`: Progress entry created successfully
+- `403`: Not authorized to access this goal
+- `404`: Goal not found
+
 ## Data Models
 
 ### User
@@ -308,7 +444,8 @@ password: string (required)
 {
   "id": "integer",
   "username": "string",
-  "entries": "JournalEntry[]"
+  "entries": "JournalEntry[]",
+  "goals": "Goal[]"
 }
 ```
 
@@ -337,6 +474,35 @@ password: string (required)
 {
   "access_token": "string",
   "token_type": "string"
+}
+```
+
+### Goal
+```json
+{
+  "id": "integer",
+  "title": "string",
+  "description": "string",
+  "category": "string",
+  "status": "string",
+  "created_at": "datetime",
+  "updated_at": "datetime",
+  "target_frequency": "string",
+  "is_active": "boolean",
+  "owner_id": "integer",
+  "progress_entries": "GoalProgress[]"
+}
+```
+
+### GoalProgress
+```json
+{
+  "id": "integer",
+  "goal_id": "integer",
+  "journal_entry_id": "integer",
+  "date": "datetime",
+  "rating": "integer",
+  "progress_note": "string"
 }
 ```
 

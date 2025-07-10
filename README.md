@@ -14,8 +14,10 @@ RetroLog is a modern web application designed to help users build better habits,
 
 ### Core Functionality
 - **Time-Block Journaling**: Structured entries for Morning, Lunch, and Evening sessions
+- **Long-term Goal Tracking**: Add and track daily goals (wake up early, limit coffee, take breaks, etc.)
 - **AI-Powered Insights**: Get personalized analysis and actionable suggestions for individual entries
-- **Adaptive Questioning**: AI generates relevant questions based on your past entries and patterns
+- **Adaptive Questioning**: AI generates relevant questions based on your past entries and goals
+- **Goal Progress Analytics**: Track progress on your long-term goals with ratings and insights
 - **Summary Analytics**: Weekly, daily, and monthly trend analysis with AI-generated insights
 - **User Authentication**: Secure login and registration system with JWT tokens
 - **Responsive Design**: Clean, terminal-inspired interface that works across devices
@@ -23,7 +25,8 @@ RetroLog is a modern web application designed to help users build better habits,
 ### AI Features
 - **Individual Entry Analysis**: Gemini AI analyzes each journal entry to identify patterns, sentiments, and themes
 - **Actionable Suggestions**: Receive 1-2 specific, actionable steps to improve well-being and productivity
-- **Smart Question Generation**: AI creates personalized questions based on your journaling history
+- **Goal-Aware Question Generation**: AI creates personalized questions based on your journaling history and long-term goals
+- **Goal Progress Insights**: AI analyzes your progress on specific goals and provides targeted recommendations
 - **Trend Analysis**: Comprehensive summaries of your progress over different time periods
 
 ## 🏗️ Architecture
@@ -92,8 +95,12 @@ RetroLog follows a modern microservices architecture with the following componen
 ### First Time Setup
 1. Register a new account through the web interface
 2. Log in with your credentials
-3. Start your first journal entry for the current time block
-4. Explore AI insights and adaptive questioning features
+3. **Set up your long-term goals** using the "Manage Goals" button
+   - Add goals like "Wake up early", "Limit coffee", "Take breaks", etc.
+   - Choose appropriate categories and target frequencies
+4. Start your first journal entry for the current time block
+5. **Rate your goal progress** when creating journal entries
+6. Explore AI insights and adaptive questioning features tailored to your goals
 
 ## 📚 Documentation
 

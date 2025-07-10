@@ -18,6 +18,18 @@ interface JournalEntry {
   insights?: string;
 }
 
+interface Goal {
+  id: number;
+  title: string;
+  description?: string;
+  category: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
+  target_frequency: string;
+  is_active: boolean;
+}
+
 function getCurrentTimeBlock(): "Morning" | "Lunch" | "Evening" {
   const hour = new Date().getHours();
   if (hour >= 5 && hour < 12) {
@@ -66,6 +78,19 @@ function App() {
   const [registerPassword, setRegisterPassword] = useState('');
   const [registerError, setRegisterError] = useState('');
 
+  // State for goals
+  const [goals, setGoals] = useState<Goal[]>([]);
+  const [showGoalsManager, setShowGoalsManager] = useState(false);
+  const [showGoalsAnalytics, setShowGoalsAnalytics] = useState(false);
+  const [goalsAnalytics, setGoalsAnalytics] = useState<any>(null);
+  const [goalProgress, setGoalProgress] = useState<{[key: number]: {rating: number, note: string}}>({});
+  const [newGoal, setNewGoal] = useState({
+    title: '',
+    description: '',
+    category: 'habits',
+    target_frequency: 'daily'
+  });
+
   useEffect(() => {
     if (token) {
       axios.get(`${API_URL}/users/me/`, {
@@ -73,6 +98,7 @@ function App() {
       })
       .then(response => {
         fetchEntries();
+        fetchGoals();
       })
       .catch(error => {
         localStorage.removeItem('token');
@@ -226,26 +252,99 @@ function App() {
     if (!currentEntry || !token) return;
 
     try {
+      let entryResponse;
       if (currentEntry.id && currentEntry.id !== 0) { // Existing entry
-        await axios.put(`${API_URL}/journal-entries/${currentEntry.id}`, {
+        entryResponse = await axios.put(`${API_URL}/journal-entries/${currentEntry.id}`, {
           time_block: currentEntry.time_block,
           answers: currentEntry.answers.map(a => ({ question: a.question, content: a.content }))
         }, {
           headers: { Authorization: `Bearer ${token}` }
         });
       } else { // New entry
-        await axios.post(`${API_URL}/journal-entries/`, {
+        entryResponse = await axios.post(`${API_URL}/journal-entries/`, {
           time_block: currentEntry.time_block,
           answers: currentEntry.answers.map(a => ({ question: a.question, content: a.content }))
         }, {
           headers: { Authorization: `Bearer ${token}` }
         });
       }
+
+      // Save goal progress if any
+      const progressData = Object.entries(goalProgress)
+        .filter(([goalId, progress]) => progress.rating > 0)
+        .map(([goalId, progress]) => ({
+          goal_id: parseInt(goalId),
+          rating: progress.rating,
+          progress_note: progress.note || ''
+        }));
+
+      if (progressData.length > 0) {
+        try {
+          const entryId = entryResponse.data.id || currentEntry.id;
+          await axios.post(`${API_URL}/journal-entries/${entryId}/goal-progress`, progressData, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+        } catch (error) {
+          console.error('Failed to save goal progress', error);
+        }
+      }
+
       setIsEditing(false);
       setCurrentEntry(null);
+      setGoalProgress({});
       fetchEntries();
     } catch (error) {
       console.error('Failed to save entry', error);
+    }
+  };
+
+  // Goals management functions
+  const fetchGoals = async () => {
+    if (!token) return;
+    try {
+      const response = await axios.get(`${API_URL}/goals/`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setGoals(response.data);
+    } catch (error) {
+      console.error('Failed to fetch goals', error);
+    }
+  };
+
+  const createGoal = async () => {
+    if (!token || !newGoal.title.trim()) return;
+    try {
+      await axios.post(`${API_URL}/goals/`, newGoal, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setNewGoal({ title: '', description: '', category: 'habits', target_frequency: 'daily' });
+      fetchGoals();
+    } catch (error) {
+      console.error('Failed to create goal', error);
+    }
+  };
+
+  const deleteGoal = async (goalId: number) => {
+    if (!token) return;
+    try {
+      await axios.delete(`${API_URL}/goals/${goalId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      fetchGoals();
+    } catch (error) {
+      console.error('Failed to delete goal', error);
+    }
+  };
+
+  const fetchGoalsAnalytics = async () => {
+    if (!token) return;
+    try {
+      const response = await axios.get(`${API_URL}/goals/analytics`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setGoalsAnalytics(response.data);
+    } catch (error) {
+      console.error('Failed to fetch goals analytics', error);
     }
   };
 
@@ -275,7 +374,116 @@ function App() {
     <div className="terminal-container">
       <h2>Welcome!</h2>
       <button onClick={handleLogout}>Logout</button>
+      <button onClick={() => setShowGoalsManager(!showGoalsManager)}>
+        {showGoalsManager ? 'Hide Goals' : 'Manage Goals'}
+      </button>
+      <button onClick={() => {
+        setShowGoalsAnalytics(!showGoalsAnalytics);
+        if (!showGoalsAnalytics) fetchGoalsAnalytics();
+      }}>
+        {showGoalsAnalytics ? 'Hide Analytics' : 'Goals Analytics'}
+      </button>
       <hr />
+
+      {showGoalsManager && (
+        <div>
+          <h3>Long-term Goals</h3>
+          <div>
+            <h4>Add New Goal</h4>
+            <input
+              type="text"
+              placeholder="Goal title (e.g., Wake up early)"
+              value={newGoal.title}
+              onChange={(e) => setNewGoal({ ...newGoal, title: e.target.value })}
+            />
+            <textarea
+              placeholder="Description (optional)"
+              value={newGoal.description}
+              onChange={(e) => setNewGoal({ ...newGoal, description: e.target.value })}
+              rows={2}
+              cols={50}
+            />
+            <select
+              value={newGoal.category}
+              onChange={(e) => setNewGoal({ ...newGoal, category: e.target.value })}
+            >
+              <option value="health">Health</option>
+              <option value="productivity">Productivity</option>
+              <option value="habits">Habits</option>
+              <option value="personal_development">Personal Development</option>
+              <option value="relationships">Relationships</option>
+              <option value="career">Career</option>
+              <option value="finance">Finance</option>
+              <option value="other">Other</option>
+            </select>
+            <select
+              value={newGoal.target_frequency}
+              onChange={(e) => setNewGoal({ ...newGoal, target_frequency: e.target.value })}
+            >
+              <option value="daily">Daily</option>
+              <option value="weekly">Weekly</option>
+              <option value="monthly">Monthly</option>
+            </select>
+            <button onClick={createGoal}>Add Goal</button>
+          </div>
+
+          <div>
+            <h4>Your Goals</h4>
+            {goals.length === 0 ? (
+              <p>No goals yet. Add your first goal above!</p>
+            ) : (
+              <ul>
+                {goals.map(goal => (
+                  <li key={goal.id}>
+                    <strong>{goal.title}</strong> ({goal.category}, {goal.target_frequency})
+                    {goal.description && <p>{goal.description}</p>}
+                    <button onClick={() => deleteGoal(goal.id)}>Delete</button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+          <hr />
+        </div>
+      )}
+
+      {showGoalsAnalytics && goalsAnalytics && (
+        <div>
+          <h3>Goals Analytics</h3>
+          <div>
+            <p><strong>Total Goals:</strong> {goalsAnalytics.total_goals}</p>
+
+            <h4>Goals by Category</h4>
+            <ul>
+              {Object.entries(goalsAnalytics.goals_by_category).map(([category, count]) => (
+                <li key={category}>{category}: {count as number}</li>
+              ))}
+            </ul>
+
+            <h4>Goals by Frequency</h4>
+            <ul>
+              {Object.entries(goalsAnalytics.goals_by_frequency).map(([frequency, count]) => (
+                <li key={frequency}>{frequency}: {count as number}</li>
+              ))}
+            </ul>
+
+            {goalsAnalytics.recent_progress.length > 0 && (
+              <div>
+                <h4>Recent Progress</h4>
+                <ul>
+                  {goalsAnalytics.recent_progress.map((progress: any) => (
+                    <li key={progress.goal_id}>
+                      <strong>{progress.goal_title}</strong>: {progress.entries_count} entries,
+                      avg rating: {progress.average_rating}/5
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+          <hr />
+        </div>
+      )}
       <h3>Journal Entry for {getCurrentTimeBlock()}</h3>
       {!isEditing && (
         <button onClick={handleNewOrEditEntry}>Start/Edit {getCurrentTimeBlock()} Entry</button>
@@ -295,6 +503,51 @@ function App() {
               />
             </div>
           ))}
+
+          {goals.length > 0 && (
+            <div>
+              <h4>Goal Progress (Optional)</h4>
+              <p>Rate your progress on your goals today (1-5 scale):</p>
+              {goals.map(goal => (
+                <div key={goal.id} style={{ marginBottom: '10px' }}>
+                  <label>
+                    <strong>{goal.title}</strong> ({goal.category}):
+                    <select
+                      value={goalProgress[goal.id]?.rating || ''}
+                      onChange={(e) => setGoalProgress({
+                        ...goalProgress,
+                        [goal.id]: {
+                          ...goalProgress[goal.id],
+                          rating: parseInt(e.target.value) || 0
+                        }
+                      })}
+                    >
+                      <option value="">No rating</option>
+                      <option value="1">1 - Poor</option>
+                      <option value="2">2 - Below Average</option>
+                      <option value="3">3 - Average</option>
+                      <option value="4">4 - Good</option>
+                      <option value="5">5 - Excellent</option>
+                    </select>
+                  </label>
+                  <textarea
+                    placeholder="Progress note (optional)"
+                    value={goalProgress[goal.id]?.note || ''}
+                    onChange={(e) => setGoalProgress({
+                      ...goalProgress,
+                      [goal.id]: {
+                        ...goalProgress[goal.id],
+                        note: e.target.value
+                      }
+                    })}
+                    rows={2}
+                    cols={40}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
+
           <button onClick={saveEntry}>Save Entry</button>
           <button onClick={() => setIsEditing(false)}>Cancel</button>
         </div>
